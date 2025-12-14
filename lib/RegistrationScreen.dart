@@ -67,18 +67,34 @@ class _HomePageState extends State<RegistrationScreen> {
   //TODO face detection code here
   doFaceDetection() async {
     //TODO remove rotation of camera images
-
     InputImage inputImage = InputImage.fromFile(_image!);
 
-    final List<Face> faces = await faceDetector.processImage(inputImage);
+    faces = await faceDetector.processImage(inputImage);
 
     for (Face face in faces) {
       final Rect boundingBox = face.boundingBox;
 
-      print("Bounding Box??????" + boundingBox.toString());
-    }
 
+      print("Cropped Image +++++ $boundingBox");
+
+
+
+      // num left = boundingBox.left < 0 ? 0 : boundingBox.left;
+      // num top = boundingBox.top < 0 ? 0 : boundingBox.top;
+      // num right = boundingBox.right > image.width ? image.width - 1 : boundingBox.right;
+      // num bottom = boundingBox.bottom > image.height ? image.height - 1 : boundingBox.bottom;
+      
+      // num width = right - left;
+      // num height = bottom - top;
+
+      // final bytes = _image!.readAsBytesSync(); 
+      // img.Image? faceImage = img.decodeImage(bytes);
+      // img.Image croppedImage = img.copyCrop(faceImage!, x: left.toInt(), y: top.toInt(), width: width.toInt(), height: height.toInt());
+
+      // print("Cropped Image +++++ $croppedImage");
+    }
     drawRectangleAroundFaces();
+
     //TODO passing input to face detector and getting detected faces
 
     //TODO call the method to perform face recognition on detected faces
@@ -137,7 +153,7 @@ class _HomePageState extends State<RegistrationScreen> {
   //     ),
   //   );
   // }
-  //TODO draw rectangles
+  // TODO draw rectangles
 
   var image;
   drawRectangleAroundFaces() async {
@@ -159,28 +175,34 @@ class _HomePageState extends State<RegistrationScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _image != null
-              ? 
-              // Container(
-              //     margin: const EdgeInsets.only(top: 100),
-              //     width: screenWidth - 50,
-              //     height: screenWidth - 50,
-              //     child: Image.file(_image!),
-              //   )
-              Container(
-                margin: const EdgeInsets.only(
-                    top: 60, left: 30, right: 30, bottom: 0),
-                child: FittedBox(
-                  child: SizedBox(
-                    width: image.width.toDouble(),
-                    height: image.width.toDouble(),
-                    child: CustomPaint(
-                      painter: FacePainter(
-                          facesList: faces, imageFile: image),
+          _image != null && image != null
+              ?
+                // Container(
+                //     margin: const EdgeInsets.only(top: 100),
+                //     width: screenWidth - 50,
+                //     height: screenWidth - 50,
+                //     child: Image.file(_image!),
+                //   )
+                Container(
+                  margin: const EdgeInsets.only(
+                    top: 60,
+                    left: 20,
+                    right: 20,
+                    bottom: 0,
+                  ),
+                  child: FittedBox(
+                    child: SizedBox(
+                      width: image.width.toDouble(),
+                      height: image.width.toDouble(),
+                      child: CustomPaint(
+                        painter: FacePainter(
+                          facesList: faces,
+                          imageFile: image,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
               : Container(
                   margin: const EdgeInsets.only(top: 100),
                   child: Image.asset(
@@ -248,7 +270,7 @@ class _HomePageState extends State<RegistrationScreen> {
 class FacePainter extends CustomPainter {
   List<Face> facesList;
   dynamic imageFile;
-  FacePainter({required this.facesList, @required this.imageFile});
+  FacePainter({required this.facesList, required this.imageFile});
 
   @override
   void paint(Canvas canvas, Size size) {
