@@ -69,30 +69,47 @@ class _HomePageState extends State<RegistrationScreen> {
     //TODO remove rotation of camera images
     InputImage inputImage = InputImage.fromFile(_image!);
 
+    image = await _image?.readAsBytes();
+    image = await decodeImageFromList(image);
+
     faces = await faceDetector.processImage(inputImage);
 
-    for (Face face in faces) {
-      final Rect boundingBox = face.boundingBox;
+    try {
+      for (Face face in faces) {
+        final Rect boundingBox = face.boundingBox;
 
+        print("working until this");
+        num left = boundingBox.left < 0 ? 0 : boundingBox.left;
+        num top = boundingBox.top < 0 ? 0 : boundingBox.top;
+        num right = boundingBox.right > image.width
+            ? image.width - 1
+            : boundingBox.right;
+        num bottom = boundingBox.bottom > image.height
+            ? image.height - 1
+            : boundingBox.bottom;
 
-      print("Cropped Image +++++ $boundingBox");
+        num width = right - left;
+        num height = bottom - top;
 
+        print("height $height");
+        print("width $width");
 
+        final bytes = _image!.readAsBytesSync();
+        img.Image? faceImage = img.decodeImage(bytes);
+        img.Image croppedImage = img.copyCrop(
+          faceImage!,
+          x: left.toInt(),
+          y: top.toInt(),
+          width: width.toInt(),
+          height: height.toInt(),
+        );
 
-      // num left = boundingBox.left < 0 ? 0 : boundingBox.left;
-      // num top = boundingBox.top < 0 ? 0 : boundingBox.top;
-      // num right = boundingBox.right > image.width ? image.width - 1 : boundingBox.right;
-      // num bottom = boundingBox.bottom > image.height ? image.height - 1 : boundingBox.bottom;
-      
-      // num width = right - left;
-      // num height = bottom - top;
-
-      // final bytes = _image!.readAsBytesSync(); 
-      // img.Image? faceImage = img.decodeImage(bytes);
-      // img.Image croppedImage = img.copyCrop(faceImage!, x: left.toInt(), y: top.toInt(), width: width.toInt(), height: height.toInt());
-
-      // print("Cropped Image +++++ $croppedImage");
+        print("Not working until this");
+      }
+    } catch (e) {
+      print("Cropping errorrrrrrrrrrrr $e");
     }
+
     drawRectangleAroundFaces();
 
     //TODO passing input to face detector and getting detected faces
@@ -157,13 +174,8 @@ class _HomePageState extends State<RegistrationScreen> {
 
   var image;
   drawRectangleAroundFaces() async {
-    image = await _image?.readAsBytes();
-    image = await decodeImageFromList(image);
     print("${image.width}   ${image.height}");
-    setState(() {
-      image;
-      faces;
-    });
+    setState(() {});
   }
 
   @override
