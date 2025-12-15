@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:face_recogintion_project/ML/recognition.dart';
+import 'package:face_recogintion_project/ML/recognizer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -23,6 +25,7 @@ class _HomePageState extends State<RegistrationScreen> {
   late FaceDetector faceDetector;
 
   //TODO declare face recognizer
+  late Recognizer recognizer;
 
   @override
   void initState() {
@@ -37,6 +40,7 @@ class _HomePageState extends State<RegistrationScreen> {
     faceDetector = FaceDetector(options: options);
 
     //TODO initialize face recognizer
+    recognizer = Recognizer();
   }
 
   //TODO choose image using gallery
@@ -103,8 +107,7 @@ class _HomePageState extends State<RegistrationScreen> {
           width: width.toInt(),
           height: height.toInt(),
         );
-
-        print("Not working until this");
+        Recognition recognition = recognizer.recognize(croppedImage, boundingBox);
       }
     } catch (e) {
       print("Cropping errorrrrrrrrrrrr $e");
@@ -175,7 +178,10 @@ class _HomePageState extends State<RegistrationScreen> {
   var image;
   drawRectangleAroundFaces() async {
     print("${image.width}   ${image.height}");
-    setState(() {});
+    setState(() {
+      image;
+      faces;
+    });
   }
 
   @override
