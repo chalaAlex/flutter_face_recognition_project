@@ -49,7 +49,7 @@ class _HomePageState extends State<HomeScreen> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RecognitionScreen()));
+                            builder: (context) => const Recognitionscreen()));
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: Size(screenWidth - 30, 50)),

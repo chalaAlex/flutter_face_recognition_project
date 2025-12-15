@@ -1,19 +1,22 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:face_recogintion_project/ML/recognition.dart';
+import 'package:face_recogintion_project/ML/recognizer.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
-class RecognitionScreen extends StatefulWidget {
-  const RecognitionScreen({Key? key}) : super(key: key);
+class Recognitionscreen extends StatefulWidget {
+  const Recognitionscreen({Key? key}) : super(key: key);
 
   @override
-  State<RecognitionScreen> createState() => _HomePageState();
+  State<Recognitionscreen> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<RecognitionScreen> {
+class _HomePageState extends State<Recognitionscreen> {
   //TODO declare variables
   late ImagePicker imagePicker;
   File? _image;
@@ -22,6 +25,7 @@ class _HomePageState extends State<RecognitionScreen> {
   late FaceDetector faceDetector;
 
   //TODO declare face recognizer
+  late Recognizer recognizer;
 
   @override
   void initState() {
@@ -36,17 +40,7 @@ class _HomePageState extends State<RecognitionScreen> {
     faceDetector = FaceDetector(options: options);
 
     //TODO initialize face recognizer
-  }
-
-  //TODO capture image using camera
-  _imgFromCamera() async {
-    XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-        doFaceDetection();
-      });
-    }
+    recognizer = Recognizer();
   }
 
   //TODO choose image using gallery
@@ -62,44 +56,78 @@ class _HomePageState extends State<RecognitionScreen> {
     }
   }
 
-  //TODO face detection code here
+  //TODO capture image using camera
+  _imgFromCamera() async {
+    XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+        doFaceDetection();
+      });
+    }
+  }
 
+  List<Face> faces = [];
+  //TODO face detection code here
   doFaceDetection() async {
     //TODO remove rotation of camera images
+    InputImage inputImage = InputImage.fromFile(_image!);
 
-    final InputImage inputImage = InputImage.fromFile(_image!);
+    // image = await _image?.readAsBytes();
+    image = await decodeImageFromList(_image!.readAsBytesSync());
+
+    faces = await faceDetector.processImage(inputImage);
+
+    try {
+      for (Face face in faces) {
+        final Rect boundingBox = face.boundingBox;
+
+        print("working until this");
+        num left = boundingBox.left < 0 ? 0 : boundingBox.left;
+        num top = boundingBox.top < 0 ? 0 : boundingBox.top;
+        num right = boundingBox.right > image.width
+            ? image.width - 1
+            : boundingBox.right;
+        num bottom = boundingBox.bottom > image.height
+            ? image.height - 1
+            : boundingBox.bottom;
+
+        num width = right - left;
+        num height = bottom - top;
+
+        print("height $height");
+        print("width $width");
+
+        final bytes = _image!.readAsBytesSync();
+        img.Image? faceImage = img.decodeImage(bytes);
+        img.Image croppedImage = img.copyCrop(
+          faceImage!,
+          x: left.toInt(),
+          y: top.toInt(),
+          width: width.toInt(),
+          height: height.toInt(),
+        );
+
+        Recognition recognition = recognizer.recognize(
+          croppedImage,
+          boundingBox,
+        );
+
+        // showFaceRegistrationDialogue(
+        //   Uint8List.fromList(img.encodeBmp(croppedImage)),
+        //   recognition,
+        // );
+
+        print("Recognized person: ${recognition.name}");
+      }
+    } catch (e) {
+      print("Cropping errorrrrrrrrrrrr $e");
+    }
+
+    drawRectangleAroundFaces();
 
     //TODO passing input to face detector and getting detected faces
-    final List<Face> faces = await faceDetector.processImage(inputImage);
 
-    for (Face face in faces) {
-      final Rect boundingBox = face.boundingBox;
-      print("Bounding Box??????" + boundingBox.toString());
-
-      // final double? rotX =
-      //     face.headEulerAngleX; // Head is tilted up and down rotX degrees
-      // final double? rotY =
-      //     face.headEulerAngleY; // Head is rotated to the right rotY degrees
-      // final double? rotZ =
-      //     face.headEulerAngleZ; // Head is tilted sideways rotZ degrees
-
-      // // If landmark detection was enabled with FaceDetectorOptions (mouth, ears,
-      // // eyes, cheeks, and nose available):
-      // final FaceLandmark? leftEar = face.landmarks[FaceLandmarkType.leftEar];
-      // if (leftEar != null) {
-      //   final Point<int> leftEarPos = leftEar.position;
-      // }
-
-      // // If classification was enabled with FaceDetectorOptions:
-      // if (face.smilingProbability != null) {
-      //   final double? smileProb = face.smilingProbability;
-      // }
-
-      // // If face tracking was enabled with FaceDetectorOptions:
-      // if (face.trackingId != null) {
-      //   final int? id = face.trackingId;
-      // }
-    }
     //TODO call the method to perform face recognition on detected faces
   }
 
@@ -114,59 +142,70 @@ class _HomePageState extends State<RecognitionScreen> {
 
   //TODO perform Face Recognition
 
-  //TODO Face Registration Dialogue
-  // TextEditingController textEditingController = TextEditingController();
-  // showFaceRegistrationDialogue(Uint8List cropedFace, Recognition recognition){
-  //   showDialog(
-  //     context: context,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text("Face Registration",textAlign: TextAlign.center),alignment: Alignment.center,
-  //       content: SizedBox(
-  //         height: 340,
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           children: [
-  //             const SizedBox(height: 20,),
-  //             Image.memory(
-  //               cropedFace,
-  //               width: 200,
-  //               height: 200,
-  //             ),
-  //             SizedBox(
-  //               width: 200,
-  //               child: TextField(
-  //                 controller: textEditingController,
-  //                   decoration: const InputDecoration( fillColor: Colors.white, filled: true,hintText: "Enter Name")
-  //               ),
-  //             ),
-  //             const SizedBox(height: 10,),
-  //             ElevatedButton(
-  //                 onPressed: () {
-  //                   recognizer.registerFaceInDB(textEditingController.text, recognition.embeddings);
-  //                   textEditingController.text = "";
-  //                   Navigator.pop(context);
-  //                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-  //                     content: Text("Face Registered"),
-  //                   ));
-  //                 },style: ElevatedButton.styleFrom(primary:Colors.blue,minimumSize: const Size(200,40)),
-  //                 child: const Text("Register"));
-  //           ],
-  //         ),
-  //       ),contentPadding: EdgeInsets.zero,
-  //     ),
-  //   );
-  // }
-  //TODO draw rectangles
-  // var image;
-  // drawRectangleAroundFaces() async {
-  //   image = await _image?.readAsBytes();
-  //   image = await decodeImageFromList(image);
-  //   print("${image.width}   ${image.height}");
-  //   setState(() {
-  //     image;
-  //     faces;
-  //   });
-  // }
+  // TODO Face Registration Dialogue
+  TextEditingController textEditingController = TextEditingController();
+  showFaceRegistrationDialogue(Uint8List cropedFace, Recognition recognition) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Face Registration", textAlign: TextAlign.center),
+        alignment: Alignment.center,
+        content: SizedBox(
+          height: 340,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Image.memory(cropedFace, width: 200, height: 200),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  controller: textEditingController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: "Enter Name",
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  recognizer.registerFaceInDB(
+                    textEditingController.text,
+                    recognition.embeddings,
+                    cropedFace,
+                  );
+                  textEditingController.text = "";
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Face Registered")),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  minimumSize: const Size(200, 40),
+                ),
+                child: const Text("Register"),
+              ),
+            ],
+          ),
+        ),
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
+  // TODO draw rectangles
+
+  var image;
+  drawRectangleAroundFaces() async {
+    print("${image.width}   ${image.height}");
+    setState(() {
+      image;
+      faces;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,27 +216,34 @@ class _HomePageState extends State<RecognitionScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _image != null
-              ? Container(
-                  margin: const EdgeInsets.only(top: 100),
-                  width: screenWidth - 50,
-                  height: screenWidth - 50,
-                  child: Image.file(_image!),
+          _image != null && image != null
+              ?
+                // Container(
+                //     margin: const EdgeInsets.only(top: 100),
+                //     width: screenWidth - 50,
+                //     height: screenWidth - 50,
+                //     child: Image.file(_image!),
+                //   )
+                Container(
+                  margin: const EdgeInsets.only(
+                    top: 60,
+                    left: 20,
+                    right: 20,
+                    bottom: 0,
+                  ),
+                  child: FittedBox(
+                    child: SizedBox(
+                      width: image.width.toDouble(),
+                      height: image.width.toDouble(),
+                      child: CustomPaint(
+                        painter: FacePainter(
+                          facesList: faces,
+                          imageFile: image,
+                        ),
+                      ),
+                    ),
+                  ),
                 )
-              // Container(
-              //   margin: const EdgeInsets.only(
-              //       top: 60, left: 30, right: 30, bottom: 0),
-              //   child: FittedBox(
-              //     child: SizedBox(
-              //       width: image.width.toDouble(),
-              //       height: image.width.toDouble(),
-              //       child: CustomPaint(
-              //         painter: FacePainter(
-              //             facesList: faces, imageFile: image),
-              //       ),
-              //     ),
-              //   ),
-              // )
               : Container(
                   margin: const EdgeInsets.only(top: 100),
                   child: Image.asset(
@@ -262,29 +308,29 @@ class _HomePageState extends State<RecognitionScreen> {
   }
 }
 
-// class FacePainter extends CustomPainter {
-//   List<Face> facesList;
-//   dynamic imageFile;
-//   FacePainter({required this.facesList, @required this.imageFile});
-//
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     if (imageFile != null) {
-//       canvas.drawImage(imageFile, Offset.zero, Paint());
-//     }
-//
-//     Paint p = Paint();
-//     p.color = Colors.red;
-//     p.style = PaintingStyle.stroke;
-//     p.strokeWidth = 3;
-//
-//     for (Face face in facesList) {
-//       canvas.drawRect(face.boundingBox, p);
-//     }
-//   }
-//
-//   @override
-//   bool shouldRepaint(CustomPainter oldDelegate) {
-//     return true;
-//   }
-// }
+class FacePainter extends CustomPainter {
+  List<Face> facesList;
+  dynamic imageFile;
+  FacePainter({required this.facesList, required this.imageFile});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (imageFile != null) {
+      canvas.drawImage(imageFile, Offset.zero, Paint());
+    }
+
+    Paint p = Paint();
+    p.color = Colors.red;
+    p.style = PaintingStyle.stroke;
+    p.strokeWidth = 3;
+
+    for (Face face in facesList) {
+      canvas.drawRect(face.boundingBox, p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}

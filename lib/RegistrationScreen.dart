@@ -73,8 +73,8 @@ class _HomePageState extends State<RegistrationScreen> {
     //TODO remove rotation of camera images
     InputImage inputImage = InputImage.fromFile(_image!);
 
-    image = await _image?.readAsBytes();
-    image = await decodeImageFromList(image);
+    // image = await _image?.readAsBytes();
+    image = await decodeImageFromList(_image!.readAsBytesSync());
 
     faces = await faceDetector.processImage(inputImage);
 
@@ -107,7 +107,16 @@ class _HomePageState extends State<RegistrationScreen> {
           width: width.toInt(),
           height: height.toInt(),
         );
-        Recognition recognition = recognizer.recognize(croppedImage, boundingBox);
+
+        Recognition recognition = recognizer.recognize(
+          croppedImage,
+          boundingBox,
+        );
+        
+        showFaceRegistrationDialogue(
+          Uint8List.fromList(img.encodeBmp(croppedImage)),
+          recognition,
+        );
       }
     } catch (e) {
       print("Cropping errorrrrrrrrrrrr $e");
@@ -131,48 +140,60 @@ class _HomePageState extends State<RegistrationScreen> {
 
   //TODO perform Face Recognition
 
-  //TODO Face Registration Dialogue
-  // TextEditingController textEditingController = TextEditingController();
-  // showFaceRegistrationDialogue(Uint8List cropedFace, Recognition recognition){
-  //   showDialog(
-  //     context: context,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text("Face Registration",textAlign: TextAlign.center),alignment: Alignment.center,
-  //       content: SizedBox(
-  //         height: 340,
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           children: [
-  //             const SizedBox(height: 20,),
-  //             Image.memory(
-  //               cropedFace,
-  //               width: 200,
-  //               height: 200,
-  //             ),
-  //             SizedBox(
-  //               width: 200,
-  //               child: TextField(
-  //                 controller: textEditingController,
-  //                   decoration: const InputDecoration( fillColor: Colors.white, filled: true,hintText: "Enter Name")
-  //               ),
-  //             ),
-  //             const SizedBox(height: 10,),
-  //             ElevatedButton(
-  //                 onPressed: () {
-  //                   recognizer.registerFaceInDB(textEditingController.text, recognition.embeddings);
-  //                   textEditingController.text = "";
-  //                   Navigator.pop(context);
-  //                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-  //                     content: Text("Face Registered"),
-  //                   ));
-  //                 },style: ElevatedButton.styleFrom(primary:Colors.blue,minimumSize: const Size(200,40)),
-  //                 child: const Text("Register"))
-  //           ],
-  //         ),
-  //       ),contentPadding: EdgeInsets.zero,
-  //     ),
-  //   );
-  // }
+  // TODO Face Registration Dialogue
+  TextEditingController textEditingController = TextEditingController();
+  showFaceRegistrationDialogue(Uint8List cropedFace, Recognition recognition) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Face Registration", textAlign: TextAlign.center),
+        alignment: Alignment.center,
+        content: SizedBox(
+          height: 340,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Image.memory(cropedFace, width: 200, height: 200),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  controller: textEditingController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: "Enter Name",
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  recognizer.registerFaceInDB(
+                    textEditingController.text,
+                    recognition.embeddings,
+                    cropedFace,
+                  );
+                  textEditingController.text = "";
+                  Navigator.pop(context);
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Face Registered")),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  minimumSize: const Size(200, 40),
+                ),
+                child: const Text("Register"),
+              ),
+            ],
+          ),
+        ),
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
   // TODO draw rectangles
 
   var image;
