@@ -68,10 +68,13 @@ class _HomePageState extends State<Recognitionscreen> {
   }
 
   List<Face> faces = [];
+  List<Recognition> recognitions = [];
+
   //TODO face detection code here
   doFaceDetection() async {
     //TODO remove rotation of camera images
     InputImage inputImage = InputImage.fromFile(_image!);
+    recognitions.clear();
 
     // image = await _image?.readAsBytes();
     image = await decodeImageFromList(_image!.readAsBytesSync());
@@ -112,6 +115,12 @@ class _HomePageState extends State<Recognitionscreen> {
           croppedImage,
           boundingBox,
         );
+
+        if(recognition.distance > 1.25){ 
+          recognition.name = "Unknown";
+        }
+
+        recognitions.add(recognition);
 
         // showFaceRegistrationDialogue(
         //   Uint8List.fromList(img.encodeBmp(croppedImage)),
@@ -200,10 +209,10 @@ class _HomePageState extends State<Recognitionscreen> {
 
   var image;
   drawRectangleAroundFaces() async {
-    print("${image.width}   ${image.height}");
+    // print("${image.width}   ${image.height}");
     setState(() {
       image;
-      faces;
+      recognitions;
     });
   }
 
@@ -237,7 +246,7 @@ class _HomePageState extends State<Recognitionscreen> {
                       height: image.width.toDouble(),
                       child: CustomPaint(
                         painter: FacePainter(
-                          facesList: faces,
+                          facesList: recognitions,
                           imageFile: image,
                         ),
                       ),
@@ -309,7 +318,7 @@ class _HomePageState extends State<Recognitionscreen> {
 }
 
 class FacePainter extends CustomPainter {
-  List<Face> facesList;
+  List<Recognition> facesList;
   dynamic imageFile;
   FacePainter({required this.facesList, required this.imageFile});
 
@@ -324,8 +333,33 @@ class FacePainter extends CustomPainter {
     p.style = PaintingStyle.stroke;
     p.strokeWidth = 3;
 
-    for (Face face in facesList) {
-      canvas.drawRect(face.boundingBox, p);
+    for (Recognition face in facesList) {
+      canvas.drawRect(face.location, p);
+
+      final textSpan = TextSpan(
+        text: face.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      final textPainter = TextPainter(
+        text: textSpan,
+        textAlign: TextAlign.left,
+        textDirection: TextDirection.ltr,
+      );
+
+      textPainter.layout();
+
+      // draw text slightly above the rectangle
+      final offset = Offset(
+        face.location.left,
+        face.location.top - textPainter.height - 4,
+      );
+
+      textPainter.paint(canvas, offset);
     }
   }
 

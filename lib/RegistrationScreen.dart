@@ -112,7 +112,7 @@ class _HomePageState extends State<RegistrationScreen> {
           croppedImage,
           boundingBox,
         );
-        
+
         showFaceRegistrationDialogue(
           Uint8List.fromList(img.encodeBmp(croppedImage)),
           recognition,
@@ -176,7 +176,7 @@ class _HomePageState extends State<RegistrationScreen> {
                   );
                   textEditingController.text = "";
                   Navigator.pop(context);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Face Registered")),
                   );
