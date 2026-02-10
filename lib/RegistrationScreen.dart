@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:face_recogintion_project/ML/recognition.dart';
 import 'package:face_recogintion_project/ML/recognizer.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +112,6 @@ class _HomePageState extends State<RegistrationScreen> {
         );
 
         showFaceRegistrationDialogue(
-          Uint8List.fromList(img.encodeBmp(croppedImage)),
           recognition,
         );
       }
@@ -141,19 +139,23 @@ class _HomePageState extends State<RegistrationScreen> {
 
   // TODO Face Registration Dialogue
   TextEditingController textEditingController = TextEditingController();
-  showFaceRegistrationDialogue(Uint8List cropedFace, Recognition recognition) {
+  showFaceRegistrationDialogue(Recognition recognition) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Face Registration", textAlign: TextAlign.center),
         alignment: Alignment.center,
         content: SizedBox(
-          height: 340,
+          height: 200,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              Image.memory(cropedFace, width: 200, height: 200),
+              const Text(
+                "Enter the person's name",
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
               SizedBox(
                 width: 200,
                 child: TextField(
@@ -165,27 +167,32 @@ class _HomePageState extends State<RegistrationScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  recognizer.registerFaceInDB(
-                    textEditingController.text,
-                    recognition.embeddings,
-                    cropedFace,
-                  );
-                  textEditingController.text = "";
-                  Navigator.pop(context);
+              const SizedBox(height: 20),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     try {
+              //       await recognizer.registerFaceInDB(
+              //         textEditingController.text,
+              //         recognition.embeddings,
+              //       );
+              //       textEditingController.text = "";
+              //       Navigator.pop(context);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Face Registered")),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: const Size(200, 40),
-                ),
-                child: const Text("Register"),
-              ),
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         const SnackBar(content: Text("Face Registered")),
+              //       );
+              //     } catch (e) {
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         SnackBar(content: Text("Error: $e")),
+              //       );
+              //     }
+              //   },
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: Colors.blue,
+              //     minimumSize: const Size(200, 40),
+              //   ),
+              //   child: const Text("Register"),
+              // ),
             ],
           ),
         ),

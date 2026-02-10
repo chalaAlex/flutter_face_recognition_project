@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,7 +15,6 @@ class DatabaseHelper {
   static const columnName = 'name';
   static const columnEmbedding = 'embedding';
   static const columnImage = 'image';
-
 
   Database? _db;
   Future<void> init() async {
@@ -67,15 +69,49 @@ class DatabaseHelper {
 
   Future<int> delete(int id) async {
     if (_db == null) throw Exception('Database not initialized');
-    return await _db!.delete(
-      table,
-      where: '$columnId = ?',
-      whereArgs: [id],
-    );
+    return await _db!.delete(table, where: '$columnId = ?', whereArgs: [id]);
   }
 
   Future<void> close() async {
     await _db?.close();
     _db = null;
+  }
+
+  Future<File> exportToJson() async {
+    if (_db == null) throw Exception('Database not initialized');
+
+    final rows = await queryAllRows();
+
+    final directory =
+        await getExternalStorageDirectory(); // instead of getApplicationDocumentsDirectory()
+    final file = File('${directory!.path}/face.json');
+
+    final List<Map<String, dynamic>> jsonList = [];
+
+    for (var row in rows) {
+      final id = row[columnId];
+      final name = row[columnName];
+
+      // Fixed: parse CSV embedding instead of JSON
+      final embeddingString = row[columnEmbedding] as String;
+      final embeddingList = embeddingString
+          .split(',')
+          .map((e) => double.parse(e))
+          .toList();
+
+      final imageBytes = row[columnImage] as List<int>;
+      final imageBase64 = base64Encode(imageBytes);
+
+      jsonList.add({
+        "id": id,
+        "name": name,
+        "embedding": embeddingList,
+        "imageBase64": imageBase64,
+      });
+    }
+
+    await file.writeAsString(jsonEncode(jsonList));
+
+    return file;
   }
 }

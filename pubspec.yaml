@@ -37,9 +37,11 @@ dependencies:
   google_mlkit_face_detection: ^0.12.0
   image_picker: ^1.2.1
   image: ^4.6.0
+  tflite_flutter: ^0.12.1
+  http: ^1.1.0
   sqflite: ^2.4.2
   path_provider: ^2.1.5
-  tflite_flutter: ^0.12.1
+  share_plus: ^12.0.1
 
 dev_dependencies:
   flutter_test:

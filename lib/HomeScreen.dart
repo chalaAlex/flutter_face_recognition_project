@@ -1,6 +1,8 @@
+import 'package:face_recogintion_project/exportingJson.dart';
 import 'package:flutter/material.dart';
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
+import 'package:face_recogintion_project/DB/databaseHelper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -9,6 +11,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    exportFaces();
+    print("init called");
+  }
+
+  void exportFaces() async {
+    try {
+      final dbHelper = DatabaseHelper();
+      await dbHelper.init();
+
+      final file = await dbHelper.exportToJson();
+      print("Exported JSON to: ${file.path}");
+    } catch (e, st) {
+      print("Error exporting faces: $e");
+      print(st);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -29,6 +51,21 @@ class _HomePageState extends State<HomeScreen> {
             margin: const EdgeInsets.only(bottom: 50),
             child: Column(
               children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ExportScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(screenWidth - 30, 50),
+                  ),
+                  child: const Text("Export"),
+                ),
+                Container(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(

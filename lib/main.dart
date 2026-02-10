@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'HomeScreen.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(home: HomeScreen(), debugShowCheckedModeBanner: false),
-  );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MaterialApp(home: HomeScreen(), debugShowCheckedModeBanner: false));
 }
