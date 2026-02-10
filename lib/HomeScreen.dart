@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
 
@@ -20,12 +18,13 @@ class _HomePageState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-              margin: const EdgeInsets.only(top: 100),
-              child: Image.asset(
-                "assets/images/logo.png",
-                width: screenWidth - 40,
-                height: screenWidth - 40,
-              )),
+            margin: const EdgeInsets.only(top: 100),
+            child: Image.asset(
+              "assets/images/logo.png",
+              width: screenWidth - 40,
+              height: screenWidth - 40,
+            ),
+          ),
           Container(
             margin: const EdgeInsets.only(bottom: 50),
             child: Column(
@@ -33,26 +32,30 @@ class _HomePageState extends State<HomeScreen> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegistrationScreen()));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegistrationScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                      minimumSize: Size(screenWidth - 30, 50)),
+                    minimumSize: Size(screenWidth - 30, 50),
+                  ),
                   child: const Text("Register"),
                 ),
-                Container(
-                  height: 20,
-                ),
+                Container(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const Recognitionscreen()));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const Recognitionscreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                      minimumSize: Size(screenWidth - 30, 50)),
+                    minimumSize: Size(screenWidth - 30, 50),
+                  ),
                   child: const Text("Recognize"),
                 ),
               ],

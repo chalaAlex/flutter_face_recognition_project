@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:face_recogintion_project/ML/recognition.dart';
 import 'package:face_recogintion_project/ML/recognizer.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
@@ -116,16 +114,7 @@ class _HomePageState extends State<Recognitionscreen> {
           boundingBox,
         );
 
-        if(recognition.distance > 1.25){ 
-          recognition.name = "Unknown";
-        }
-
         recognitions.add(recognition);
-
-        // showFaceRegistrationDialogue(
-        //   Uint8List.fromList(img.encodeBmp(croppedImage)),
-        //   recognition,
-        // );
 
         print("Recognized person: ${recognition.name}");
       }
@@ -209,7 +198,6 @@ class _HomePageState extends State<Recognitionscreen> {
 
   var image;
   drawRectangleAroundFaces() async {
-    // print("${image.width}   ${image.height}");
     setState(() {
       image;
       recognitions;
@@ -226,14 +214,7 @@ class _HomePageState extends State<Recognitionscreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _image != null && image != null
-              ?
-                // Container(
-                //     margin: const EdgeInsets.only(top: 100),
-                //     width: screenWidth - 50,
-                //     height: screenWidth - 50,
-                //     child: Image.file(_image!),
-                //   )
-                Container(
+              ? Container(
                   margin: const EdgeInsets.only(
                     top: 60,
                     left: 20,
@@ -340,7 +321,16 @@ class FacePainter extends CustomPainter {
         text: face.name,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 20,
+          fontSize: 40,
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      final textSpan2 = TextSpan(
+        text: "${(face.distance * 100).round()}%",
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 40,
           backgroundColor: Colors.red,
         ),
       );
@@ -350,16 +340,26 @@ class FacePainter extends CustomPainter {
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr,
       );
+      final textPainter2 = TextPainter(
+        text: textSpan2,
+        textAlign: TextAlign.left,
+        textDirection: TextDirection.ltr,
+      );
 
       textPainter.layout();
+      textPainter2.layout();
 
-      // draw text slightly above the rectangle
       final offset = Offset(
         face.location.left,
         face.location.top - textPainter.height - 4,
       );
-
       textPainter.paint(canvas, offset);
+
+      final offset2 = Offset(
+        face.location.right - textPainter2.width,
+        face.location.top - textPainter.height - 4 - textPainter2.height,
+      );
+      textPainter2.paint(canvas, offset2);
     }
   }
 

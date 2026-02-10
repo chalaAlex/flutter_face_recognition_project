@@ -82,7 +82,6 @@ class _HomePageState extends State<RegistrationScreen> {
       for (Face face in faces) {
         final Rect boundingBox = face.boundingBox;
 
-        print("working until this");
         num left = boundingBox.left < 0 ? 0 : boundingBox.left;
         num top = boundingBox.top < 0 ? 0 : boundingBox.top;
         num right = boundingBox.right > image.width
